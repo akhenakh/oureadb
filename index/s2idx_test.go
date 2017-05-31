@@ -11,11 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// lng, lat
 var quebec = []float64{-71.21266275644302, 46.80960262934726}
 
 const (
 	quebecCellID = 5528333301988720640
-	s2Level      = 18
+	s2Level      = 14
 )
 
 func TestPointGeoStorage(t *testing.T) {
@@ -40,6 +41,8 @@ func TestPointGeoStorage(t *testing.T) {
 
 	// querying back the point
 	c := s2.CellIDFromLatLng(s2.LatLngFromDegrees(geo.Geometry.Coordinates[1], geo.Geometry.Coordinates[0]))
+	t.Log("inserted", c)
+
 	res, err := idx.GeoIdsAtCell(c)
 
 	// the cell is not at the right level
@@ -51,7 +54,12 @@ func TestPointGeoStorage(t *testing.T) {
 	res, err = idx.GeoIdsAtCell(c)
 	require.NoError(t, err)
 	require.Len(t, res, 1)
+	t.Log("inserted", c)
 
+	// querying radius
+	res, err = idx.GeoIdsRadiusQuery(46.809, -71.212, 5000)
+	require.NoError(t, err)
+	require.Len(t, res, 1)
 }
 
 func TestPointGeoCovering(t *testing.T) {

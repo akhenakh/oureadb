@@ -33,7 +33,7 @@ func NewS2FlatIdx(s store.KVStore, prefix []byte, level int) *S2FlatIdx {
 // GeoIndex is geo indexing the geo data
 // it's not storing GeoData itself but only the geo index of the cover
 // k is the key referring to the GeoData stored somewhere else
-func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, k []byte) error {
+func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, k GeoID) error {
 	cu, err := idx.Covering(gd)
 	if err != nil {
 		return errors.Wrap(err, "generating cover failed")
@@ -61,7 +61,7 @@ func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, k []byte) error {
 }
 
 // GeoIdsAtCell returns all GeoData keys contained in the cell
-func (idx *S2FlatIdx) GeoIdsAtCell(c s2.CellID) ([][]byte, error) {
+func (idx *S2FlatIdx) GeoIdsAtCell(c s2.CellID) ([]GeoID, error) {
 	if c.Level() != idx.level {
 		return nil, errors.New("requested a cellID with a different level than the index")
 	}
@@ -71,23 +71,23 @@ func (idx *S2FlatIdx) GeoIdsAtCell(c s2.CellID) ([][]byte, error) {
 	copy(k, idx.prefix)
 	k = append(k, itob(uint64(c))...)
 
-	var res [][]byte
+	var res []GeoID
 
 	kv, err := idx.Reader()
 	if err != nil {
 		return nil, err
 	}
 
-	// iterate over the cell
+	// iterate entries with cell's prefix
 	iter := kv.PrefixIterator(k)
 	for {
 		kid, _, ok := iter.Current()
 		if !ok {
 			break
 		}
-		_, id, err := idx.geoKeyToValues(kid)
+		_, id, err := idx.keyToValues(kid)
 		if err != nil {
-			return nil, errors.Wrap(err, "leveldb read back failed")
+			return nil, errors.Wrap(err, "read back failed key from db")
 		}
 
 		res = append(res, id)
@@ -97,13 +97,47 @@ func (idx *S2FlatIdx) GeoIdsAtCell(c s2.CellID) ([][]byte, error) {
 	return res, nil
 }
 
+// GeoIdsAtCells returns all GeoData keys contained in the cells, without duplicates
+func (idx *S2FlatIdx) GeoIdsAtCells(cells []s2.CellID) ([]GeoID, error) {
+	m := make(map[string]struct{})
+
+	for _, c := range cells {
+		ids, err := idx.GeoIdsAtCell(c)
+		if err != nil {
+			return nil, errors.Wrap(err, "fetching geo ids from cells failed")
+		}
+		for _, id := range ids {
+			m[string(id)] = struct{}{}
+		}
+	}
+
+	res := make([]GeoID, len(m))
+	var i int
+	for k := range m {
+		res[i] = []byte(k)
+		i++
+	}
+
+	return res, nil
+}
+
+// GeoIdsRadiusQuery returns the GeoID found in the index inside radius
+// note you should check the returned GeoData is really inside/intersects the cap
+func (idx *S2FlatIdx) GeoIdsRadiusQuery(lat, lng, radius float64) ([]GeoID, error) {
+	center := s2.PointFromLatLng(s2.LatLngFromDegrees(lat, lng))
+	cap := s2.CapFromCenterArea(center, s2RadialAreaMeters(radius))
+	coverer := &s2.RegionCoverer{MinLevel: idx.level, MaxLevel: idx.level}
+	cu := coverer.Covering(cap)
+	return idx.GeoIdsAtCells(cu)
+}
+
 // Covering is generating the cover of a GeoData
 func (idx *S2FlatIdx) Covering(gd *geodata.GeoData) (s2.CellUnion, error) {
 	coverer := &s2.RegionCoverer{MinLevel: idx.level, MaxCells: idx.level}
 	return geodata.GeoDataToFlatCellUnion(gd, coverer)
 }
 
-func (idx *S2FlatIdx) geoKeyToValues(k []byte) (c s2.CellID, id []byte, err error) {
+func (idx *S2FlatIdx) keyToValues(k []byte) (c s2.CellID, id GeoID, err error) {
 	// prefix+cellid+id
 	if len(k) <= len(idx.prefix)+8 {
 		return c, id, errors.New("invalid key")
