@@ -58,10 +58,6 @@ func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, k []byte) error {
 	}
 
 	return kv.ExecuteBatch(batch)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // GeoIdsAtCell returns all GeoData keys contained in the cell
