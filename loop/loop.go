@@ -1,4 +1,4 @@
-package index
+package loop
 
 import "github.com/golang/geo/s2"
 

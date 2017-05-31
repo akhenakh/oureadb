@@ -100,7 +100,7 @@ func (idx *S2FlatIdx) GeoIdsAtCell(c s2.CellID) ([][]byte, error) {
 // Covering is generating the cover of a GeoData
 func (idx *S2FlatIdx) Covering(gd *geodata.GeoData) (s2.CellUnion, error) {
 	coverer := &s2.RegionCoverer{MinLevel: idx.level, MaxCells: idx.level}
-	return GeoDataToFlatCellUnion(gd, coverer)
+	return geodata.GeoDataToFlatCellUnion(gd, coverer)
 }
 
 func (idx *S2FlatIdx) geoKeyToValues(k []byte) (c s2.CellID, id []byte, err error) {

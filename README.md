@@ -5,7 +5,8 @@
 A general purpose geo indexing tool.
 
 
+Work in progress.
 
 - S2FlatIdx a points & polygons indexer, flat cover using s2
 
-- S2TimeIdx
+- S2TimeIdx a geo reverse timed indexer, flat cover using s2
