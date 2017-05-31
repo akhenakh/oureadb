@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/akhenakh/oureadb)](https://goreportcard.com/report/github.com/akhenakh/oureadb)  [![GoDoc](https://godoc.org/github.com/akhenakh/oureadb?status.svg)](https://godoc.org/github.com/akhenakh/oureadb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/akhenakh/oureadb)](https://goreportcard.com/report/github.com/akhenakh/oureadb)  [![GoDoc](https://godoc.org/github.com/akhenakh/oureadb/index?status.svg)](https://godoc.org/github.com/akhenakh/oureadb/index)
 
 ## OureaDB
 
