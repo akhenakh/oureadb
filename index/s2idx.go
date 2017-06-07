@@ -15,7 +15,7 @@ type S2FlatIdx struct {
 	// s2 level to index
 	level int
 
-	// prefix or bucket for the keys
+	// prefix for the keys
 	prefix []byte
 
 	store.KVStore
@@ -32,8 +32,8 @@ func NewS2FlatIdx(s store.KVStore, prefix []byte, level int) *S2FlatIdx {
 
 // GeoIndex is geo indexing the geo data
 // it's not storing GeoData itself but only the geo index of the cover
-// k is the key referring to the GeoData stored somewhere else
-func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, k GeoID) error {
+// id is the key referring to the GeoData stored somewhere else
+func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, id GeoID) error {
 	cu, err := idx.Covering(gd)
 	if err != nil {
 		return errors.Wrap(err, "generating cover failed")
@@ -53,7 +53,7 @@ func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, k GeoID) error {
 		k := make([]byte, len(idx.prefix))
 		copy(k, idx.prefix)
 		k = append(k, itob(uint64(c))...)
-		k = append(k, k...)
+		k = append(k, []byte(id)...)
 		batch.Set(k, nil)
 	}
 

@@ -20,7 +20,7 @@ const (
 )
 
 func TestPointGeoStorage(t *testing.T) {
-	s := open(t)
+	s := openStore(t)
 	defer cleanup(t, s)
 
 	id := []byte("MYPOINTID")
@@ -86,7 +86,7 @@ func TestPointGeoCovering(t *testing.T) {
 	require.EqualValues(t, cu[0], quebecCellID)
 }
 
-func open(t *testing.T) store.KVStore {
+func openStore(t *testing.T) store.KVStore {
 	rv, err := gtreap.New(nil, map[string]interface{}{
 		"path": "",
 	})
