@@ -42,17 +42,23 @@ func (l *LoopFence) ContainsCell(c s2.Cell) bool {
 }
 
 // IntersectsCell checks if any edge of the cell intersects the loop or if the cell is contained.
+// Does not count for loop interior and uses raycasting.
 func (l *LoopFence) IntersectsCell(c s2.Cell) bool {
+	// if any of the cell's vertices is contained by the loop
+	// they intersect
 	for i := 0; i < 4; i++ {
-		crosser := s2.NewChainEdgeCrosser(c.Vertex(i), c.Vertex((i+1)%4), l.Vertex(0))
-		for _, v := range l.Vertices()[1:] {
-			if crosser.EdgeOrVertexChainCrossing(v) {
-				return true
-			}
-		}
-		if crosser.EdgeOrVertexChainCrossing(l.Vertex(0)) { //close the loop
+		v := c.Vertex(i)
+		if l.ContainsPoint(v) {
 			return true
 		}
 	}
-	return l.ContainsCell(c)
+	// missing case from the above implementation
+	// where the loop is fully contained by the cell
+	for _, v := range l.Vertices() {
+		if c.ContainsPoint(v) {
+			return true
+		}
+	}
+
+	return false
 }

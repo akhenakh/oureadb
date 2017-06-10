@@ -4,7 +4,37 @@ import (
 	"testing"
 
 	"github.com/golang/geo/s2"
+	"github.com/stretchr/testify/require"
 )
+
+func TestBadLoop(t *testing.T) {
+	const failingLoop = `{features:[{geometry:{type:"Polygon",coordinates:[[[2.4001533999884828,48.846457859383435],[2.4002499620546587,48.84650728362274],[2.401886152667487,48.8453952264004],[2.4018003197157896,48.84533874029373],[2.4001533999884828,48.846457859383435]]]},type:"Feature",properties:{id:"42"},id:"42"}],type:"FeatureCollection"}`
+
+	s2pts := make([]s2.Point, 4)
+	s2pts[0] = s2.PointFromLatLng(s2.LatLngFromDegrees(48.846457859383435, 2.4001533999884828))
+	s2pts[1] = s2.PointFromLatLng(s2.LatLngFromDegrees(48.84650728362274, 2.4002499620546587))
+	s2pts[2] = s2.PointFromLatLng(s2.LatLngFromDegrees(48.8453952264004, 2.401886152667487))
+	s2pts[3] = s2.PointFromLatLng(s2.LatLngFromDegrees(48.84533874029373, 2.4018003197157896))
+
+	if s2.RobustSign(s2pts[0], s2pts[1], s2pts[2]) == s2.Clockwise {
+		t.Log("NOT CCW reversing")
+		// reverse the slice
+		for i := len(s2pts)/2 - 1; i >= 0; i-- {
+			opp := len(s2pts) - 1 - i
+			s2pts[i], s2pts[opp] = s2pts[opp], s2pts[i]
+		}
+	}
+
+	for _, p := range s2pts {
+		t.Log(s2.LatLngFromPoint(p).Lat.Degrees(), s2.LatLngFromPoint(p).Lng.Degrees())
+	}
+	l := LoopFenceFromPoints(s2pts)
+	require.False(t, l.IsEmpty() || l.IsFull())
+	rc := &s2.RegionCoverer{MinLevel: 18, MaxLevel: 18}
+	covering := rc.Covering(l)
+	t.Log(covering)
+	require.Len(t, covering, 11)
+}
 
 func Test3PLoop(t *testing.T) {
 	s2pts := make([]s2.Point, 3)
@@ -43,100 +73,4 @@ func Test4PLoop(t *testing.T) {
 	t.Log(l)
 	covering := rc.Covering(l)
 	t.Log(covering)
-
-}
-
-func TestCoverIsNotRectBases(t *testing.T) {
-	points := []s2.Point{
-		s2.PointFromLatLng(s2.LatLng{Lat: 48.7195648396, Lng: 2.3574256897}),
-		s2.PointFromLatLng(s2.LatLng{Lat: 48.7278882281, Lng: 2.40257263184}),
-		s2.PointFromLatLng(s2.LatLng{Lat: 48.7273220548, Lng: 2.4028301239}),
-		s2.PointFromLatLng(s2.LatLng{Lat: 48.7189985726, Lng: 2.35776901245}),
-		s2.PointFromLatLng(s2.LatLng{Lat: 48.7195648396, Lng: 2.3574256897}),
-	}
-
-	marker := s2.CellIDFromLatLng(s2.LatLng{Lat: 48.72163165982755, Lng: 2.35806941986084})
-	inside := s2.CellIDFromLatLng(s2.LatLng{Lat: 48.71964977907006, Lng: 2.358584403991699})
-
-	rc := &s2.RegionCoverer{MinLevel: 1, MaxLevel: 30, MaxCells: 32}
-
-	if s2.RobustSign(points[0], points[1], points[2]) == s2.Clockwise {
-		t.Log("NOT CCW reversing")
-		// reverse the slice
-		for i := len(points)/2 - 1; i >= 0; i-- {
-			opp := len(points) - 1 - i
-			points[i], points[opp] = points[opp], points[i]
-		}
-	}
-
-	// test with s2 rect cover
-	lr := s2.LoopFromPoints(points)
-	if lr.IsEmpty() || lr.IsFull() {
-		t.Fatal("invalid loop")
-	}
-
-	t.Log(lr.RectBound())
-	if !lr.RectBound().ContainsCell(s2.CellFromCellID(inside)) {
-		t.Fatal("loop bound is invalid inside shoud be contained!")
-	}
-	if !lr.RectBound().ContainsCell(s2.CellFromCellID(marker)) {
-		t.Fatal("loop bound is invalid inside shoud not be contained!")
-	}
-
-	covering := rc.Covering(lr.RectBound())
-	if len(covering) != 32 {
-		t.Fatal("covering failed got only", len(covering))
-	}
-
-	coverString := ""
-	for _, cov := range covering {
-		coverString = coverString + cov.ToToken() + " "
-	}
-
-	t.Log(coverString)
-
-	// the marker will be inside if it's using a rect bound
-	found := false
-	for _, c := range covering {
-		if c.Contains(marker) {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		t.Fatal("our test is not working anymore we should have found Split in the rect based cover")
-	}
-
-	l := LoopFenceFromPoints(points)
-	if l.IsEmpty() || l.IsFull() {
-		t.Fatal("invalid loop")
-	}
-
-	if !l.ContainsCell(s2.CellFromCellID(inside)) {
-		t.Fatal("loop is invalid inside shoud be contained!")
-	}
-	if l.ContainsCell(s2.CellFromCellID(marker)) {
-		t.Fatal("loop is invalid inside shoud not be contained!")
-	}
-
-	// the marker will be outside if it's using a real shape bound
-	covering = rc.Covering(l)
-	coverString = ""
-	for _, cov := range covering {
-		coverString = coverString + cov.ToToken() + " "
-	}
-
-	t.Log(coverString)
-
-	if len(covering) != 32 {
-		t.Fatal("covering failed got only", len(covering))
-	}
-
-	for _, c := range covering {
-		if c.Contains(marker) {
-			t.Fatal("covering should be precise and not rect based, Split should not be contained in the answer")
-		}
-	}
-
 }

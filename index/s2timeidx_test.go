@@ -16,9 +16,9 @@ func TestPointGeoTimeStorage(t *testing.T) {
 	s := openStore(t)
 	defer cleanup(t, s)
 
-	id := []byte("MYPOINTID")
+	id := []byte("MYTIMEPOINTID")
 
-	idx := NewS2FlatTimeIdx(s, []byte("TESTPREFIX"), s2Level)
+	idx := NewS2FlatTimeIdx(s, []byte("TESTTIMEPREFIX"), s2Level)
 	require.NotNil(t, idx)
 
 	geo := &geodata.GeoData{
@@ -39,7 +39,7 @@ func TestPointGeoTimeStorage(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, res, 1)
 
-	// Querying only in the past
+	// Querying only in the past won't find anything
 	past := now.Add(-2 * time.Hour)
 	res, err = idx.GeoTimeIdsRadiusQuery(past, MinGeoTime, 48.850, 2.348, 2000)
 	require.NoError(t, err)

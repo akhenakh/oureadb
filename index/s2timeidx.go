@@ -35,7 +35,7 @@ func NewS2FlatTimeIdx(s store.KVStore, prefix []byte, level int) *S2FlatTimeIdx 
 // GeoTimeIndex is indexing the data by time and geo position
 // it's not storing GeoData itself but only the geo index of the cover
 // id is the key referring to the GeoData stored somewhere else
-// it's mean to index geographical points or polygon attached to a time event
+// it's meant to index geographical points or polygon attached to a time event
 // could be a user position or an effect zone
 // t is the time when the event end (can be in the future)
 func (idx *S2FlatTimeIdx) GeoTimeIndex(gd *geodata.GeoData, t time.Time, id GeoID) error {
