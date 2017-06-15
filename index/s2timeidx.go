@@ -79,6 +79,16 @@ func (idx *S2FlatTimeIdx) GeoTimeIdsRadiusQuery(from time.Time, to time.Time, la
 	return idx.GeoTimeIdsAtCells(cu, from, to)
 }
 
+// GeoTimeIdsRectQuery query over rect ur upper right bl bottom left
+// scan from future to past
+func (idx *S2FlatTimeIdx) GeoTimeIdsRectQuery(from time.Time, to time.Time, urlat, urlng, bllat, bllng float64) ([]GeoID, error) {
+	rect := s2.RectFromLatLng(s2.LatLngFromDegrees(bllat, bllng))
+	rect = rect.AddPoint(s2.LatLngFromDegrees(urlat, urlng))
+	coverer := &s2.RegionCoverer{MinLevel: idx.level, MaxLevel: idx.level}
+	cu := coverer.Covering(rect)
+	return idx.GeoTimeIdsAtCells(cu, from, to)
+}
+
 // GeoTimeIdsAtCells returns all GeoData keys contained in the cells within time range, without duplicates
 func (idx *S2FlatTimeIdx) GeoTimeIdsAtCells(cells []s2.CellID, from time.Time, to time.Time) ([]GeoID, error) {
 	m := make(map[string]struct{})
