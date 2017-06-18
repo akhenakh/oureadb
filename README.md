@@ -11,6 +11,7 @@ Work in progress.
 
 - S2FlatTimeIdx a geo reverse timed points & polygons indexer, flat cover using s2
 
+- S2PointIdx a point only generic indexer using s2
 
 ### Example usages
 

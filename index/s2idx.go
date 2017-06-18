@@ -74,12 +74,14 @@ func (idx *S2FlatIdx) GeoIdsAtCell(c s2.CellID) ([]GeoID, error) {
 	var res []GeoID
 
 	kv, err := idx.Reader()
+	defer kv.Close()
 	if err != nil {
 		return nil, err
 	}
 
 	// iterate entries with cell's prefix
 	iter := kv.PrefixIterator(k)
+	defer iter.Close()
 	for {
 		kid, _, ok := iter.Current()
 		if !ok {

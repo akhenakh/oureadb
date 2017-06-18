@@ -19,7 +19,7 @@ const (
 	s2Level      = 14
 )
 
-func TestPointGeoStorage(t *testing.T) {
+func TestGenericPointGeoStorage(t *testing.T) {
 	s := openStore(t)
 	defer cleanup(t, s)
 
@@ -62,8 +62,9 @@ func TestPointGeoStorage(t *testing.T) {
 	require.Len(t, res, 1)
 }
 
-func TestPointGeoCovering(t *testing.T) {
+func TestGenericPointGeoCovering(t *testing.T) {
 	s, _ := null.New(nil, nil)
+	defer s.Close()
 	const s2Level = 18
 	idx := NewS2FlatIdx(s, []byte("TEST"), s2Level)
 	require.NotNil(t, idx)
