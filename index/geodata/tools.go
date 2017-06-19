@@ -141,6 +141,32 @@ func ToGeoJSONFeatureCollection(geos []*GeoData) ([]byte, error) {
 	return fc.MarshalJSON()
 }
 
+// PointsToGeoJSONPolyLines converts a list of GeoDatato containing points to a polylines GeoJSON
+func PointsToGeoJSONPolyLines(geos []*GeoData) ([]byte, error) {
+	f := geojson.Feature{}
+	var flatCoords []float64
+
+	if len(geos) == 0 {
+		return f.MarshalJSON()
+	}
+
+	for _, g := range geos {
+		switch g.Geometry.Type {
+		case Geometry_POINT:
+			flatCoords = append(flatCoords, g.Geometry.Coordinates...)
+		default:
+			return nil, errors.Errorf("unsupported geometry")
+
+		}
+
+	}
+	f.Properties = PropertiesToJSONMap(geos[0].Properties)
+	g := geom.NewLineStringFlat(geom.XY, flatCoords)
+	f.Geometry = g
+
+	return f.MarshalJSON()
+}
+
 // PropertiesToJSONMap converts a protobuf map to it's JSON serializable map equivalent
 func PropertiesToJSONMap(src map[string]*spb.Value) map[string]interface{} {
 	res := make(map[string]interface{})

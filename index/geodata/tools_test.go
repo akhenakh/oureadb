@@ -28,5 +28,26 @@ func TestGeoJSONFeatureToGeoData(t *testing.T) {
 	require.Equal(t, gd.Geometry.Type, Geometry_POINT)
 	require.Equal(t, gd.Geometry.Coordinates[0], quebec[0])
 	require.Equal(t, gd.Geometry.Coordinates[1], quebec[1])
+}
 
+func TestPointsToGeoJSONPolyLines(t *testing.T) {
+	geo0 := &GeoData{
+		Geometry: &Geometry{
+			Coordinates: []float64{2.3489123582839966, 48.85800406207049},
+			Type:        Geometry_POINT,
+		},
+	}
+
+	geo1 := &GeoData{
+		Geometry: &Geometry{
+			Coordinates: []float64{2.3489123582839964, 48.85800406207042},
+			Type:        Geometry_POINT,
+		},
+	}
+
+	gs := []*GeoData{geo0, geo1}
+
+	js, err := PointsToGeoJSONPolyLines(gs)
+	require.NoError(t, err)
+	t.Log(string(js))
 }
