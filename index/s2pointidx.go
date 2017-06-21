@@ -50,8 +50,12 @@ func (idx *S2PointIdx) PointKey(lat, lng float64, id GeoID) []byte {
 	// a key prefix+cellid+id -> no values
 	k := make([]byte, len(idx.prefix))
 	copy(k, idx.prefix)
+
+	// avoid any retain by copying id
+	cid := append([]byte(nil), id...)
+
 	k = append(k, itob(uint64(c))...)
-	k = append(k, []byte(id)...)
+	k = append(k, []byte(cid)...)
 	return k
 }
 
@@ -169,6 +173,8 @@ func (idx *S2PointIdx) GeoIdsRadiusQuery(lat, lng, radius float64) ([]GeoID, err
 				break
 			}
 
+			kid = append([]byte(nil), kid...)
+
 			c, id, err := idx.keyToValues(kid)
 			if err != nil {
 				return nil, errors.Wrap(err, "read back failed key from db")
@@ -217,6 +223,7 @@ func (idx *S2PointIdx) GeoIdsRectQuery(urlat, urlng, bllat, bllng float64) ([]Ge
 			if !ok {
 				break
 			}
+			kid = append([]byte(nil), kid...)
 
 			c, id, err := idx.keyToValues(kid)
 			if err != nil {

@@ -33,5 +33,5 @@ func int64tob(v int64) []byte {
 
 func s2RadialAreaMeters(radius float64) float64 {
 	r := (radius / earthCircumferenceMeter) * math.Pi * 2
-	return (math.Pi * r * r)
+	return math.Pi * r * r
 }
