@@ -3,7 +3,6 @@ package geodata
 import (
 	"fmt"
 
-	"github.com/akhenakh/oureadb/loop"
 	"github.com/golang/geo/s2"
 	"github.com/golang/protobuf/ptypes/struct"
 	spb "github.com/golang/protobuf/ptypes/struct"
@@ -85,7 +84,7 @@ func GeoDataToFlatCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnio
 		if len(gd.Geometry.Coordinates)%2 != 0 {
 			return nil, errors.New("invalid polygons odd coordinates number")
 		}
-		l := loop.LoopFenceFromCoordinates(gd.Geometry.Coordinates)
+		l := LoopFromCoordinates(gd.Geometry.Coordinates)
 		if l.IsEmpty() || l.IsFull() || l.ContainsOrigin() {
 			return nil, errors.New("invalid polygons")
 		}
@@ -99,7 +98,7 @@ func GeoDataToFlatCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnio
 			if len(g.Coordinates)%2 != 0 {
 				return nil, errors.New("invalid polygons odd coordinates number")
 			}
-			l := loop.LoopFenceFromCoordinates(g.Coordinates)
+			l := LoopFromCoordinates(g.Coordinates)
 			if l.IsEmpty() || l.IsFull() || l.ContainsOrigin() {
 				return nil, errors.New("invalid polygons")
 			}
@@ -182,4 +181,18 @@ func PropertiesToJSONMap(src map[string]*spb.Value) map[string]interface{} {
 		}
 	}
 	return res
+}
+
+// LoopFromCoordinates creates a LoopFence from a list of lng lat
+func LoopFromCoordinates(c []float64) *s2.Loop {
+	if len(c)%2 != 0 {
+		return nil
+	}
+	points := make([]s2.Point, len(c)/2)
+
+	for i := 0; i < len(c); i += 2 {
+		points[i/2] = s2.PointFromLatLng(s2.LatLngFromDegrees(c[i+1], c[i]))
+	}
+	loop := s2.LoopFromPoints(points)
+	return loop
 }
