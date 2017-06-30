@@ -39,6 +39,11 @@ func (idx *S2FlatIdx) GeoIndex(gd *geodata.GeoData, id GeoID) error {
 		return errors.Wrap(err, "generating cover failed")
 	}
 
+	// no cover for this geo object this is probably an error
+	if len(cu) == 0 {
+		return errors.New("geo object can't be indexed, empty cover")
+	}
+
 	kv, err := idx.KVStore.Writer()
 	if err != nil {
 		return err
