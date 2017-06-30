@@ -142,6 +142,27 @@ func TestGenericPointGeoCovering(t *testing.T) {
 	require.EqualValues(t, cu[0], quebecCellID)
 }
 
+func TestGenericPolygonGeoCovering(t *testing.T) {
+	s, _ := null.New(nil, nil)
+	defer s.Close()
+	const s2Level = 18
+	idx := NewS2FlatIdx(s, []byte("TEST"), s2Level)
+	require.NotNil(t, idx)
+
+	geo := &geodata.GeoData{
+		Geometry: &geodata.Geometry{
+			Coordinates: ring,
+			Type:        geodata.Geometry_POLYGON,
+		},
+	}
+
+	// covering the polygon
+	cu, err := idx.Covering(geo)
+	require.NoError(t, err)
+	require.Len(t, cu, 188)
+	t.Log(cu)
+}
+
 func openStore(t *testing.T) store.KVStore {
 	rv, err := gtreap.New(nil, map[string]interface{}{
 		"path": "",
