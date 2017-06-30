@@ -113,7 +113,7 @@ func GeoDataToFlatCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnio
 	return cu, nil
 }
 
-// returns an s2 cover from a list of lng,lat forming a closed polygon
+// returns an s2 cover from a list of lng, lat forming a closed polygon
 func coverPolygon(c []float64, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
 	if len(c) < 6 {
 		return nil, errors.New("invalid polygons not enough coordinates for a closed polygon")
@@ -129,7 +129,7 @@ func coverPolygon(c []float64, coverer *s2.RegionCoverer) (s2.CellUnion, error) 
 	return coverer.Covering(l), nil
 }
 
-// ToGeoJSONFeatureCollection converts a GeoData to a GeoJSON Feature Collection
+// ToGeoJSONFeatureCollection converts a list of GeoData to a GeoJSON Feature Collection
 func ToGeoJSONFeatureCollection(geos []*GeoData) ([]byte, error) {
 	fc := geojson.FeatureCollection{}
 	for _, g := range geos {
@@ -198,4 +198,3 @@ func PropertiesToJSONMap(src map[string]*spb.Value) map[string]interface{} {
 	}
 	return res
 }
-
