@@ -119,14 +119,14 @@ func Test3PLoop(t *testing.T) {
 	s2pts[1] = s2.PointFromLatLng(s2.LatLngFromDegrees(53.56133333693556, -113.5860000459106))
 	s2pts[2] = s2.PointFromLatLng(s2.LatLngFromDegrees(53.5543333277993, -113.4728333483211))
 
-	l := LoopFenceFromPoints(s2pts)
+	l := s2.LoopFromPoints(s2pts)
 	t.Log(l)
 	rc := &s2.RegionCoverer{MinLevel: 1, MaxLevel: 30, MaxCells: 32}
 	if s2.RobustSign(s2pts[0], s2pts[1], s2pts[2]) == s2.Clockwise {
 		t.Log("NOT CCW")
 		s2pts[0], s2pts[1] = s2pts[1], s2pts[0]
 	}
-	l = LoopFenceFromPoints(s2pts)
+	l = s2.LoopFromPoints(s2pts)
 	t.Log(l)
 	covering := rc.Covering(l)
 	t.Log(covering)
@@ -140,14 +140,14 @@ func Test4PLoop(t *testing.T) {
 	s2pts[1] = s2.PointFromLatLng(s2.LatLngFromDegrees(47.63100000228975, -122.18449997736279))
 	s2pts[2] = s2.PointFromLatLng(s2.LatLngFromDegrees(47.64100002912518, -122.1180000087143))
 	s2pts[3] = s2.PointFromLatLng(s2.LatLngFromDegrees(47.629666669247634, -122.03883334651307))
-	l := LoopFenceFromPoints(s2pts)
+	l := s2.LoopFromPoints(s2pts)
 	t.Log(l)
 	rc := &s2.RegionCoverer{MinLevel: 1, MaxLevel: 30, MaxCells: 32}
 	if s2.RobustSign(s2pts[0], s2pts[1], s2pts[2]) != s2.CounterClockwise {
 		t.Log("NOT CCW")
 		s2pts[0], s2pts[1] = s2pts[1], s2pts[0]
 	}
-	l = LoopFenceFromPoints(s2pts)
+	l = s2.LoopFromPoints(s2pts)
 	require.False(t, l.IsEmpty() || l.IsFull())
 	t.Log(l)
 	covering := rc.Covering(l)
