@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/akhenakh/oureadb/index/geodata"
-	"github.com/blevesearch/bleve/index/store"
-	"github.com/blevesearch/bleve/index/store/gtreap"
-	"github.com/blevesearch/bleve/index/store/null"
+	"github.com/akhenakh/oureadb/store"
+	"github.com/akhenakh/oureadb/store/gtreap"
+	"github.com/akhenakh/oureadb/store/null"
 	"github.com/golang/geo/s2"
 	"github.com/stretchr/testify/require"
 )

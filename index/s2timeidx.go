@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/akhenakh/oureadb/index/geodata"
-	"github.com/blevesearch/bleve/index/store"
+	"github.com/akhenakh/oureadb/store"
 	"github.com/golang/geo/s2"
 	"github.com/pkg/errors"
 )
