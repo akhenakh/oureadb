@@ -26,8 +26,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/blevesearch/bleve/index/store"
-	"github.com/blevesearch/bleve/registry"
+	"github.com/akhenakh/oureadb/store"
 	"github.com/dgraph-io/badger"
 )
 
@@ -95,8 +94,4 @@ func (s *Store) Writer() (store.KVWriter, error) {
 	return &Writer{
 		s: s,
 	}, nil
-}
-
-func init() {
-	registry.RegisterKVStore(Name, New)
 }

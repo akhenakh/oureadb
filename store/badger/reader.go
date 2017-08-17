@@ -1,7 +1,7 @@
 package badger
 
 import (
-	"github.com/blevesearch/bleve/index/store"
+	"github.com/akhenakh/oureadb/store"
 	"github.com/dgraph-io/badger"
 )
 
