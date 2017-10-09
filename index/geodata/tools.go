@@ -47,7 +47,7 @@ func GeoDataToGeom(gd *GeoData) (geom.T, error) {
 	case Geometry_POLYGON:
 		return geom.NewPolygonFlat(geom.XY, gd.Geometry.Coordinates, []int{len(gd.Geometry.Coordinates)}), nil
 	case Geometry_LINESTRING:
-		return geom.NewLineStringFlat(geo, XY, gd.Geometry.Coordinates)
+		return geom.NewLineStringFlat(geom.XY, gd.Geometry.Coordinates), nil
 	default:
 		return nil, errors.Errorf("unsupported geodata type")
 	}

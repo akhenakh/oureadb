@@ -15,8 +15,9 @@ var (
 )
 
 const (
-	pointGeoJSON   = `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[-71.22759461402893, 46.79841427927054]}}]}`
-	polygonGeoJSON = `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-71.2324869632721,46.79705550924151],[-71.23148918151855,46.79630633487581],[-71.22928977012634,46.795850949282105],[-71.22731566429138,46.79614474688046],[-71.22568488121033,46.79727585265817],[-71.22525572776794,46.79828207612585],[-71.22547030448912,46.79936907011552],[-71.22538447380066,46.799706915125526],[-71.22511625289917,46.79987583683501],[-71.22511625289917,46.80001538045589],[-71.22598528862,46.800786536044875],[-71.2324869632721,46.79705550924151]]]}}]}`
+	pointGeoJSON      = `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[-71.22759461402893, 46.79841427927054]}}]}`
+	polygonGeoJSON    = `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-71.2324869632721,46.79705550924151],[-71.23148918151855,46.79630633487581],[-71.22928977012634,46.795850949282105],[-71.22731566429138,46.79614474688046],[-71.22568488121033,46.79727585265817],[-71.22525572776794,46.79828207612585],[-71.22547030448912,46.79936907011552],[-71.22538447380066,46.799706915125526],[-71.22511625289917,46.79987583683501],[-71.22511625289917,46.80001538045589],[-71.22598528862,46.800786536044875],[-71.2324869632721,46.79705550924151]]]}}]}`
+	lineStringGeoJSON = `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"LineString","coordinates":[[-71.26419067382812,46.83735599002144],[-71.25045776367188,46.84328581149685],[-71.23689651489258,46.849156277107134],[-71.22685432434082,46.8535587053004]]}}]}`
 )
 
 func TestGeoJSONFeatureToGeoData(t *testing.T) {
@@ -60,6 +61,23 @@ func TestGeoJSONFeatureToGeoData(t *testing.T) {
 
 	// Test geop is inside geopoly
 	require.True(t, geopoly.Bounds().OverlapsPoint(geom.XY, geop.FlatCoords()))
+
+	// Testing lines
+	err = json.Unmarshal([]byte(lineStringGeoJSON), &fc)
+	require.NoError(t, err)
+
+	f = fc.Features[0]
+	err = GeoJSONFeatureToGeoData(f, gd)
+	require.NoError(t, err)
+
+	require.Equal(t, gd.Geometry.Type, Geometry_LINESTRING)
+
+	geoline, err := GeoDataToGeom(gd)
+	require.NoError(t, err)
+	geoline, ok = geoline.(*geom.LineString)
+	require.True(t, ok)
+	require.NotNil(t, p)
+	require.EqualValues(t, geoline.FlatCoords(), gd.Geometry.Coordinates)
 }
 
 func TestPointsToGeoJSONPolyLines(t *testing.T) {
