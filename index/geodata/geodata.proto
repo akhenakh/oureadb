@@ -15,6 +15,7 @@ message Geometry {
         POINT = 0;
         POLYGON = 1;
         MULTIPOLYGON = 2;
+        LINESTRING = 3;
     }
 }
 

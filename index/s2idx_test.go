@@ -3,6 +3,8 @@ package index
 import (
 	"testing"
 
+	"github.com/akhenakh/oureadb/s2tools"
+
 	"github.com/akhenakh/oureadb/index/geodata"
 	"github.com/akhenakh/oureadb/store"
 	"github.com/akhenakh/oureadb/store/gtreap"
@@ -13,6 +15,18 @@ import (
 
 // lng, lat
 var quebec = []float64{-71.21266275644302, 46.80960262934726}
+
+var road = []float64{
+	-71.26419067382812,
+	46.83735599002144,
+	-71.25045776367188,
+	46.84328581149685,
+	-71.23689651489258,
+	46.849156277107134,
+	-71.22685432434082,
+	46.8535587053004,
+}
+
 var ring = []float64{
 	-71.2324869632721,
 	46.79705550924151,
@@ -161,6 +175,28 @@ func TestGenericPolygonGeoCovering(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, cu, 188)
 	t.Log(cu)
+}
+
+func TestGenericLineStringGeoCovering(t *testing.T) {
+	s, _ := null.New(nil, nil)
+	defer s.Close()
+	const s2Level = 12
+	idx := NewS2FlatIdx(s, []byte("TESTL"), s2Level)
+	require.NotNil(t, idx)
+
+	geo := &geodata.GeoData{
+		Geometry: &geodata.Geometry{
+			Coordinates: road,
+			Type:        geodata.Geometry_LINESTRING,
+		},
+	}
+
+	// covering the Line
+	cu, err := idx.Covering(geo)
+	require.NoError(t, err)
+	t.Log(s2tools.CellUnionToTokens(cu))
+	require.Len(t, cu, 3)
+	// 4cb8963,4cb897d,4cb8bd9
 }
 
 func openStore(t *testing.T) store.KVStore {

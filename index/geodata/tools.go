@@ -90,12 +90,14 @@ func GeoDataToFlatCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnio
 	case Geometry_POINT:
 		c := s2.CellIDFromLatLng(s2.LatLngFromDegrees(gd.Geometry.Coordinates[1], gd.Geometry.Coordinates[0]))
 		cu = append(cu, c.Parent(coverer.MinLevel))
+
 	case Geometry_POLYGON:
 		cup, err := coverPolygon(gd.Geometry.Coordinates, coverer)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't cover polygon")
 		}
 		cu = append(cu, cup...)
+
 	case Geometry_MULTIPOLYGON:
 		for _, g := range gd.Geometry.Geometries {
 			cup, err := coverPolygon(g.Coordinates, coverer)
@@ -106,6 +108,32 @@ func GeoDataToFlatCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnio
 			cu = append(cu, cup...)
 		}
 
+	case Geometry_LINESTRING:
+		if len(gd.Geometry.Coordinates)%2 != 0 {
+			return nil, errors.New("invalid coordinates count for line")
+		}
+
+		// the s2 cover returns bogus results
+		// pl := make(s2.Polyline, len(gd.Geometry.Coordinates))
+		// for i := 0; i <= len(gd.Geometry.Coordinates)/2+2; i += 2 {
+		// 	ll := s2.LatLngFromDegrees(gd.Geometry.Coordinates[i+1], gd.Geometry.Coordinates[i])
+		// 	pl[i/2] = s2.PointFromLatLng(ll)
+		// }
+
+		// cupl := coverer.Covering(&pl)
+		// cu = append(cu, cupl...)
+
+		// uncomplete tempory solution
+		// for each points add the cell, it is invalid because 2 distant points could be in more than 2 different cells
+		m := make(map[s2.CellID]struct{})
+		for i := 0; i <= len(gd.Geometry.Coordinates)/2+2; i += 2 {
+			ll := s2.LatLngFromDegrees(gd.Geometry.Coordinates[i+1], gd.Geometry.Coordinates[i])
+			c := s2.CellIDFromLatLng(ll).Parent(coverer.MinLevel)
+			m[c] = struct{}{}
+		}
+		for c := range m {
+			cu = append(cu, c)
+		}
 	default:
 		return nil, errors.New("unsupported data type")
 	}

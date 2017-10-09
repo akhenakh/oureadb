@@ -65,7 +65,7 @@ func (idx *S2FlatTimeIdx) GeoTimeIndex(gd *geodata.GeoData, t time.Time, id GeoI
 
 // Covering is generating the cover of a GeoData
 func (idx *S2FlatTimeIdx) Covering(gd *geodata.GeoData) (s2.CellUnion, error) {
-	coverer := &s2.RegionCoverer{MinLevel: idx.level, MaxCells: idx.level}
+	coverer := &s2.RegionCoverer{MinLevel: idx.level, MaxLevel: idx.level}
 	return geodata.GeoDataToFlatCellUnion(gd, coverer)
 }
 
