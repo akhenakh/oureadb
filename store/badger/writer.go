@@ -15,6 +15,7 @@ func (w *Writer) NewBatch() store.KVBatch {
 	return &Batch{
 		store: w.s,
 		merge: store.NewEmulatedMerge(w.s.mo),
+		Txn:   w.s.db.NewTransaction(true),
 	}
 }
 
@@ -31,20 +32,26 @@ func (w *Writer) ExecuteBatch(b store.KVBatch) error {
 	// first process merges
 	for k, mergeOps := range batch.merge.Merges {
 		kb := []byte(k)
-		item := &badger.KVItem{}
-		err := w.s.kv.Get(kb, item)
-		if err != nil {
+		item, err := batch.Txn.Get(kb)
+		if err != nil && err != badger.ErrKeyNotFound {
 			return err
 		}
-		mergedVal, fullMergeOk := w.s.mo.FullMerge(kb, item.Value(), mergeOps)
+		var v []byte
+		if err != badger.ErrKeyNotFound {
+			vt, err := item.Value()
+			if err != nil {
+				return err
+			}
+			v = vt
+		}
+		mergedVal, fullMergeOk := w.s.mo.FullMerge(kb, v, mergeOps)
 		if !fullMergeOk {
 			return fmt.Errorf("merge operator returned failure")
 		}
-		// add the final merge to this batch
-		batch.entries = badger.EntriesSet(batch.entries, kb, mergedVal)
+		batch.Txn.Set(kb, mergedVal, 0)
 	}
 
-	return w.s.kv.BatchSet(batch.entries)
+	return batch.Txn.Commit(nil)
 }
 
 func (w *Writer) Close() error {

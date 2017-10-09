@@ -35,10 +35,9 @@ const (
 )
 
 type Store struct {
-	path    string
-	kv      *badger.KV
-	itrOpts *badger.IteratorOptions
-	mo      store.MergeOperator
+	path string
+	db   *badger.DB
+	mo   store.MergeOperator
 }
 
 func New(mo store.MergeOperator, config map[string]interface{}) (store.KVStore, error) {
@@ -63,30 +62,27 @@ func New(mo store.MergeOperator, config map[string]interface{}) (store.KVStore, 
 		}
 	}
 
-	kv, err := badger.NewKV(&opt)
+	db, err := badger.Open(&opt)
 	if err != nil {
 		return nil, err
 	}
 
-	itrOpts := &badger.DefaultIteratorOptions
-
 	rv := Store{
-		path:    path,
-		kv:      kv,
-		itrOpts: itrOpts,
-		mo:      mo,
+		path: path,
+		db:   db,
+		mo:   mo,
 	}
 	return &rv, nil
 }
 
 func (s *Store) Close() error {
-	return s.kv.Close()
+	return s.db.Close()
 }
 
 func (s *Store) Reader() (store.KVReader, error) {
 	return &Reader{
-		kv:      s.kv,
-		itrOpts: s.itrOpts,
+		ItrOpts: badger.DefaultIteratorOptions,
+		Txn:     s.db.NewTransaction(false),
 	}, nil
 }
 

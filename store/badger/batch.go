@@ -6,9 +6,9 @@ import (
 )
 
 type Batch struct {
-	store   *Store
-	merge   *store.EmulatedMerge
-	entries []*badger.Entry
+	store *Store
+	merge *store.EmulatedMerge
+	*badger.Txn
 }
 
 func (b *Batch) Set(key, val []byte) {
@@ -18,14 +18,14 @@ func (b *Batch) Set(key, val []byte) {
 	valc := make([]byte, len(val))
 	copy(valc, val)
 
-	b.entries = badger.EntriesSet(b.entries, keyc, valc)
+	b.Txn.Set(keyc, valc, 0)
 }
 
 func (b *Batch) Delete(key []byte) {
 	keyc := make([]byte, len(key))
 	copy(keyc, key)
 
-	b.entries = badger.EntriesDelete(b.entries, keyc)
+	b.Txn.Delete(keyc)
 }
 
 func (b *Batch) Merge(key, val []byte) {
@@ -33,12 +33,12 @@ func (b *Batch) Merge(key, val []byte) {
 }
 
 func (b *Batch) Reset() {
-	b.entries = nil
 	b.merge = store.NewEmulatedMerge(b.store.mo)
+	b.Txn = b.store.db.NewTransaction(true)
 }
 
 func (b *Batch) Close() error {
-	b.entries = nil
 	b.merge = nil
+	b.Txn.Discard()
 	return nil
 }

@@ -6,22 +6,26 @@ import (
 )
 
 type Reader struct {
-	kv      *badger.KV
-	itrOpts *badger.IteratorOptions
+	// you can modify ItrOpts before calling PrefixIterator or PrefixIterator
+	// defaulted to badger.DefaultIteratorOptions by store.Reader()
+	ItrOpts badger.IteratorOptions
+	*badger.Txn
 }
 
 func (r *Reader) Get(k []byte) ([]byte, error) {
-	item := &badger.KVItem{}
-	err := r.kv.Get(k, item)
+	item, err := r.Txn.Get(k)
+	if err == badger.ErrKeyNotFound {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	vs := item.Value()
+	vs, err := item.Value()
 	v := make([]byte, len(vs))
 	copy(v, vs)
 
-	return v, nil
+	return v, err
 }
 
 func (r *Reader) MultiGet(keys [][]byte) ([][]byte, error) {
@@ -30,7 +34,7 @@ func (r *Reader) MultiGet(keys [][]byte) ([][]byte, error) {
 
 func (r *Reader) PrefixIterator(k []byte) store.KVIterator {
 	rv := PrefixIterator{
-		iterator: r.kv.NewIterator(*r.itrOpts),
+		iterator: r.Txn.NewIterator(r.ItrOpts),
 		prefix:   k[:],
 	}
 	rv.iterator.Seek(k)
@@ -39,7 +43,8 @@ func (r *Reader) PrefixIterator(k []byte) store.KVIterator {
 
 func (r *Reader) RangeIterator(start, end []byte) store.KVIterator {
 	rv := RangeIterator{
-		iterator: r.kv.NewIterator(*r.itrOpts),
+		iterator: r.Txn.NewIterator(r.ItrOpts),
+		start:    start[:],
 		stop:     end[:],
 	}
 	rv.iterator.Seek(start)
