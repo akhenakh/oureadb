@@ -2,19 +2,13 @@
 
 ## OureaDB
 
-A general purpose geo indexing tool.
+A general purpose geo data storing and indexing tool.
 
+GeoJSON can be geo indexed and stored in protobuf (see `TestGeoJSONFeatureToGeoData()`)
 
-Work in progress.
+- S2FlatIdx a points, lines & polygons indexer, flat cover using s2
 
-- S2FlatIdx a points & polygons indexer, flat cover using s2
-
-- S2FlatTimeIdx a geo reverse timed points & polygons indexer, flat cover using s2
+- S2FlatTimeIdx a geo reverse timed points, lines & polygons indexer, flat cover using s2
 
 - S2PointIdx a point only generic indexer using s2
 
-### Example usages
-
-```go
-
-```
