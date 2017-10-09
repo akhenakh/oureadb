@@ -27,6 +27,10 @@ func GeomToGeoData(g geom.T, gd *GeoData) error {
 		geo.Type = Geometry_POLYGON
 		geo.Coordinates = g.FlatCoords()
 
+	case *geom.LineString:
+		geo.Type = Geometry_LINESTRING
+		geo.Coordinates = g.FlatCoords()
+
 	default:
 		return errors.Errorf("unsupported geo type %T", g)
 	}
@@ -42,6 +46,8 @@ func GeoDataToGeom(gd *GeoData) (geom.T, error) {
 		return geom.NewPointFlat(geom.XY, gd.Geometry.Coordinates), nil
 	case Geometry_POLYGON:
 		return geom.NewPolygonFlat(geom.XY, gd.Geometry.Coordinates, []int{len(gd.Geometry.Coordinates)}), nil
+	case Geometry_LINESTRING:
+		return geom.NewLineStringFlat(geo, XY, gd.Geometry.Coordinates)
 	default:
 		return nil, errors.Errorf("unsupported geodata type")
 	}
@@ -176,6 +182,9 @@ func ToGeoJSONFeatureCollection(geos []*GeoData) ([]byte, error) {
 				mp.Push(ng)
 			}
 			f.Geometry = mp
+		case Geometry_LINESTRING:
+			ls := geom.NewLineStringFlat(geom.XY, g.Geometry.Coordinates)
+			f.Geometry = ls
 		}
 		f.Properties = PropertiesToJSONMap(g.Properties)
 		fc.Features = append(fc.Features, f)
@@ -184,7 +193,7 @@ func ToGeoJSONFeatureCollection(geos []*GeoData) ([]byte, error) {
 	return fc.MarshalJSON()
 }
 
-// PointsToGeoJSONPolyLines converts a list of GeoDatato containing points to a polylines GeoJSON
+// PointsToGeoJSONPolyLines converts a list of GeoData containing points to a polylines GeoJSON
 func PointsToGeoJSONPolyLines(geos []*GeoData) ([]byte, error) {
 	f := geojson.Feature{}
 	var flatCoords []float64
@@ -199,7 +208,6 @@ func PointsToGeoJSONPolyLines(geos []*GeoData) ([]byte, error) {
 			flatCoords = append(flatCoords, g.Geometry.Coordinates...)
 		default:
 			return nil, errors.Errorf("unsupported geometry")
-
 		}
 
 	}
