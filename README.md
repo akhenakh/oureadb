@@ -1,4 +1,4 @@
-[![wercker status](https://app.wercker.com/status/59e3bf8a0b4ddd0100557bd2/s/master "wercker status")](https://app.wercker.com/project/byKey/59e3bf8a0b4ddd0100557bd2)[![Go Report Card](https://goreportcard.com/badge/github.com/akhenakh/oureadb)](https://goreportcard.com/report/github.com/akhenakh/oureadb)  [![GoDoc](https://godoc.org/github.com/akhenakh/oureadb/index?status.svg)](https://godoc.org/github.com/akhenakh/oureadb/index)
+[![wercker status](https://app.wercker.com/status/05840c0bd8b92d8cf6d21d5b94d7469c/s/master "wercker status")](https://app.wercker.com/project/byKey/05840c0bd8b92d8cf6d21d5b94d7469c)[![Go Report Card](https://goreportcard.com/badge/github.com/akhenakh/oureadb)](https://goreportcard.com/report/github.com/akhenakh/oureadb)  [![GoDoc](https://godoc.org/github.com/akhenakh/oureadb/index?status.svg)](https://godoc.org/github.com/akhenakh/oureadb/index)
 
 ## OureaDB
 
