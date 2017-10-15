@@ -88,6 +88,7 @@ func TestPointGeoCovering(t *testing.T) {
 	buf := bytes.NewBuffer(k[len(idx.prefix):])
 	var c s2.CellID
 	err = binary.Read(buf, binary.BigEndian, &c)
+	require.NoError(t, err)
 	t.Log(c.ToToken())
 	require.EqualValues(t, c, quebecCellL30ID)
 }

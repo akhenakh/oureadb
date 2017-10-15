@@ -39,7 +39,7 @@ func GeomToGeoData(g geom.T, gd *GeoData) error {
 	return nil
 }
 
-// GeoDataToGeom
+// GeoDataToGeom converts GeoData to a geom.T representation
 func GeoDataToGeom(gd *GeoData) (geom.T, error) {
 	switch gd.Geometry.Type {
 	case Geometry_POINT:

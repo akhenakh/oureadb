@@ -59,7 +59,7 @@ func (idx *S2PointIdx) PointKey(lat, lng float64, id GeoID) []byte {
 	return k
 }
 
-// PointKey is returning the key generated for a geopoint + id
+// GeoPointKey is returning the key generated for a geopoint + id
 func (idx *S2PointIdx) GeoPointKey(gd *geodata.GeoData, id GeoID) ([]byte, error) {
 	if gd.Geometry.Type != geodata.Geometry_POINT {
 		return nil, errors.New("only points are supported")
@@ -192,7 +192,7 @@ func (idx *S2PointIdx) GeoIdsRadiusQuery(lat, lng, radius float64) ([]GeoID, err
 	return res, nil
 }
 
-// GeoTimeIdsRectQuery query over rect ur upper right bl bottom left
+// GeoIdsRectQuery query over rect ur upper right bl bottom left
 func (idx *S2PointIdx) GeoIdsRectQuery(urlat, urlng, bllat, bllng float64) ([]GeoID, error) {
 	rect := s2.RectFromLatLng(s2.LatLngFromDegrees(bllat, bllng))
 	rect = rect.AddPoint(s2.LatLngFromDegrees(urlat, urlng))

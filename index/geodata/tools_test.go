@@ -103,8 +103,6 @@ func TestPointsToGeoJSONPolyLines(t *testing.T) {
 }
 
 func TestBadLoop(t *testing.T) {
-	const failingLoop = `{features:[{geometry:{type:"Polygon",coordinates:[[[2.4001533999884828,48.846457859383435],[2.4002499620546587,48.84650728362274],[2.401886152667487,48.8453952264004],[2.4018003197157896,48.84533874029373],[2.4001533999884828,48.846457859383435]]]},type:"Feature",properties:{id:"42"},id:"42"}],type:"FeatureCollection"}`
-
 	s2pts := make([]s2.Point, 4)
 	s2pts[0] = s2.PointFromLatLng(s2.LatLngFromDegrees(48.846457859383435, 2.4001533999884828))
 	s2pts[1] = s2.PointFromLatLng(s2.LatLngFromDegrees(48.84650728362274, 2.4002499620546587))
