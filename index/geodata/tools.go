@@ -89,8 +89,8 @@ func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
 	return nil
 }
 
-// GeoDataToFlatCellUnion generate an s2 cover for GeoData gd
-func GeoDataToFlatCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
+// GeoDataToCellUnion generate an s2 cover for GeoData gd
+func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
 	var cu s2.CellUnion
 	switch gd.Geometry.Type {
 	case Geometry_POINT:

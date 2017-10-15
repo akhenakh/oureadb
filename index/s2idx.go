@@ -141,7 +141,7 @@ func (idx *S2FlatIdx) GeoIdsRadiusQuery(lat, lng, radius float64) ([]GeoID, erro
 // Covering is generating the cover of a GeoData
 func (idx *S2FlatIdx) Covering(gd *geodata.GeoData) (s2.CellUnion, error) {
 	coverer := &s2.RegionCoverer{MinLevel: idx.level, MaxLevel: idx.level}
-	return geodata.GeoDataToFlatCellUnion(gd, coverer)
+	return geodata.GeoDataToCellUnion(gd, coverer)
 }
 
 func (idx *S2FlatIdx) keyToValues(k []byte) (c s2.CellID, id GeoID, err error) {

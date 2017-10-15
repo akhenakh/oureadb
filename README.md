@@ -4,11 +4,23 @@
 
 A general purpose geo data storing and indexing tool.
 
-GeoJSON can be geo indexed and stored in protobuf (see `TestGeoJSONFeatureToGeoData()`)
+GeoJSON can be geo indexed and stored in protobuf (see `TestGeoJSONFeatureToGeoData()`) into different KV storages.
 
-- S2FlatIdx a points, lines & polygons indexer, flat cover using s2
+- Using badger database
+- GoLevelDB
+- BoltDB
+- In memory using gtreap
 
-- S2FlatTimeIdx a geo reverse timed points, lines & polygons indexer, flat cover using s2
+Fast Geo & time Indexes are provided:
 
-- S2PointIdx a point only generic indexer using s2
+- `S2FlatIdx` a points, lines & polygons indexer, flat cover using s2
 
+- `S2FlatTimeIdx` a geo reverse timed points, lines & polygons indexer, flat cover using s2
+
+- `S2PointIdx` a point only generic indexer using s2
+
+Debug tools:
+
+- `S2CellQueryHandler()` returns a GeoJSON of cells token passed to it
+
+- `GeoJSONToCellHandler()` returns a GeoJSON of cells covering the GeoJSON geometry passed to it

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/akhenakh/oureadb/s2tools"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -18,7 +19,9 @@ func main() {
 
 	flag.Parse()
 
-	http.HandleFunc("/api/s2cells", s2tools.S2CellQueryHandler)
-
+	r := mux.NewRouter()
+	r.HandleFunc("/api/s2cells", s2tools.S2CellQueryHandler)
+	r.HandleFunc("/api/geojson/{min_level:[0-9]+}/{max_level:[0-9]+}/{max_cells:[0-9]+}", s2tools.GeoJSONToCellHandler).Methods("POST")
+	http.Handle("/", r)
 	log.Println(http.ListenAndServe(fmt.Sprintf(":%d", *httpPort), nil))
 }
