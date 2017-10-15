@@ -119,27 +119,15 @@ func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, e
 			return nil, errors.New("invalid coordinates count for line")
 		}
 
-		// the s2 cover returns bogus results
-		// pl := make(s2.Polyline, len(gd.Geometry.Coordinates))
-		// for i := 0; i <= len(gd.Geometry.Coordinates)/2+2; i += 2 {
-		// 	ll := s2.LatLngFromDegrees(gd.Geometry.Coordinates[i+1], gd.Geometry.Coordinates[i])
-		// 	pl[i/2] = s2.PointFromLatLng(ll)
-		// }
-
-		// cupl := coverer.Covering(&pl)
-		// cu = append(cu, cupl...)
-
-		// uncomplete tempory solution
-		// for each points add the cell, it is invalid because 2 distant points could be in more than 2 different cells
-		m := make(map[s2.CellID]struct{})
+		pl := make(s2.Polyline, len(gd.Geometry.Coordinates)/2)
 		for i := 0; i <= len(gd.Geometry.Coordinates)/2+2; i += 2 {
 			ll := s2.LatLngFromDegrees(gd.Geometry.Coordinates[i+1], gd.Geometry.Coordinates[i])
-			c := s2.CellIDFromLatLng(ll).Parent(coverer.MinLevel)
-			m[c] = struct{}{}
+			pl[i/2] = s2.PointFromLatLng(ll)
 		}
-		for c := range m {
-			cu = append(cu, c)
-		}
+
+		cupl := coverer.Covering(&pl)
+		cu = append(cu, cupl...)
+
 	default:
 		return nil, errors.New("unsupported data type")
 	}

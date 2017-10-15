@@ -51,7 +51,6 @@ func TestGeoJSONHandler(t *testing.T) {
 		v, ok := f.Properties["id"]
 		require.True(t, ok)
 		require.True(t, isValid(v.(string)))
-
 	}
 
 }

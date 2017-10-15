@@ -21,6 +21,6 @@ Fast Geo & time Indexes are provided:
 
 Debug tools:
 
-- `S2CellQueryHandler()` returns a GeoJSON of cells token passed to it
+- `S2CellQueryHandler()` returns a GeoJSON of cells tokens passed to it
 
 - `GeoJSONToCellHandler()` returns a GeoJSON of cells covering the GeoJSON geometry passed to it

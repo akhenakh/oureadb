@@ -14,6 +14,7 @@ func CellUnionToGeoJSON(cu s2.CellUnion) []byte {
 		f := &geojson.Feature{}
 		f.Properties = make(map[string]interface{})
 		f.Properties["id"] = cid.ToToken()
+		f.Properties["uid"] = uint64(cid)
 		f.Properties["level"] = cid.Level()
 
 		c := s2.CellFromCellID(cid)

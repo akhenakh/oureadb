@@ -80,6 +80,25 @@ func TestGeoJSONFeatureToGeoData(t *testing.T) {
 	require.EqualValues(t, geoline.FlatCoords(), gd.Geometry.Coordinates)
 }
 
+func TestLineCover(t *testing.T) {
+	gd := &GeoData{}
+	var fc geojson.FeatureCollection
+
+	// Testing lines
+	err := json.Unmarshal([]byte(lineStringGeoJSON), &fc)
+	require.NoError(t, err)
+
+	f := fc.Features[0]
+	err = GeoJSONFeatureToGeoData(f, gd)
+	require.NoError(t, err)
+
+	coverer := &s2.RegionCoverer{MinLevel: 9}
+	cu, err := GeoDataToCellUnion(gd, coverer)
+	require.NoError(t, err)
+
+	require.Len(t, cu, 2)
+}
+
 func TestPointsToGeoJSONPolyLines(t *testing.T) {
 	geo0 := &GeoData{
 		Geometry: &Geometry{
