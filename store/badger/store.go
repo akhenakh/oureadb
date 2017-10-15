@@ -62,7 +62,7 @@ func New(mo store.MergeOperator, config map[string]interface{}) (store.KVStore, 
 		}
 	}
 
-	db, err := badger.Open(&opt)
+	db, err := badger.Open(opt)
 	if err != nil {
 		return nil, err
 	}
