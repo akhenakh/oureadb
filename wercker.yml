@@ -1,0 +1,24 @@
+box: golang
+
+build:
+    steps:
+        - wercker/setup-go-workspace:
+            package-dir: github.com/akhenakh/oureadb
+
+        - script:
+            name: go get
+            code: |
+                cd $WERCKER_SOURCE_DIR
+                go get ./...
+
+        # Build the project
+        - script:
+            name: go build
+            code: |
+                go build ./...
+
+        - script:
+            name: test
+            code: |
+                go get github.com/stretchr/testify
+                go test ./...
