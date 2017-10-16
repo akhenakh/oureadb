@@ -21,3 +21,22 @@ func TestCellUnionMissing(t *testing.T) {
 	require.EqualValues(t, 6093489644383502336, uint64(res[0]))
 	require.EqualValues(t, 6093490026635591680, uint64(res[1]))
 }
+
+func TestCellUnionUnion(t *testing.T) {
+	cu := s2.CellUnion{6093496101150654464, 6093496108309282816, 6093496138374053888, 6093496159848890368, 6093490069585264640}
+	pcu := s2.CellUnion{6093496101150654464, 6093496108309282816, 6093496138374053888, 6093496159848890368, 6093489644383502336, 6093490026635591680}
+
+	cu.Normalize()
+	pcu.Normalize()
+
+	expected := s2.CellUnion{6093496101150654464, 6093496108309282816, 6093496138374053888, 6093496159848890368, 6093490069585264640, 6093489644383502336, 6093490026635591680}
+	expected.Normalize()
+
+	res := CellUnionUnion(cu)
+	require.EqualValues(t, cu, res)
+
+	res = CellUnionUnion(cu, pcu)
+	require.Len(t, res, len(expected))
+	require.EqualValues(t, expected, res)
+
+}
