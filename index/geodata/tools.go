@@ -120,7 +120,7 @@ func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, e
 		}
 
 		pl := make(s2.Polyline, len(gd.Geometry.Coordinates)/2)
-		for i := 0; i <= len(gd.Geometry.Coordinates)/2+2; i += 2 {
+		for i := 0; i < len(gd.Geometry.Coordinates); i += 2 {
 			ll := s2.LatLngFromDegrees(gd.Geometry.Coordinates[i+1], gd.Geometry.Coordinates[i])
 			pl[i/2] = s2.PointFromLatLng(ll)
 		}
