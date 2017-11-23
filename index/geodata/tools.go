@@ -70,6 +70,9 @@ func GeoJSONFeatureToGeoData(f *geojson.Feature, gd *GeoData) error {
 
 // PropertiesToGeoData update gd.Properties with the properties found in f
 func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
+	if gd.Properties == nil {
+		gd.Properties = make(map[string]*structpb.Value)
+	}
 	for k, vi := range f.Properties {
 		switch tv := vi.(type) {
 		case bool:
