@@ -92,6 +92,43 @@ func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
 	return nil
 }
 
+// GeoDataToRect generate a RectBound for GeoData gd
+// only works with Polygons & LineString
+func GeoDataToRect(gd *GeoData) (s2.Rect, error) {
+	switch gd.Geometry.Type {
+	case Geometry_POINT:
+		return s2.Rect{}, errors.New("point can't be rect bounded")
+
+	case Geometry_POLYGON:
+		l := LoopFromCoordinates(gd.Geometry.Coordinates)
+		if l.IsEmpty() || l.IsFull() || l.ContainsOrigin() {
+			return s2.Rect{}, errors.New("invalid polygon")
+		}
+		return l.RectBound(), nil
+
+	case Geometry_MULTIPOLYGON:
+		return s2.Rect{}, errors.New("multipolygon not supported")
+
+	case Geometry_LINESTRING:
+		if len(gd.Geometry.Coordinates)%2 != 0 {
+			return s2.Rect{}, errors.New("invalid coordinates count for line")
+		}
+
+		pl := make(s2.Polyline, len(gd.Geometry.Coordinates)/2)
+		for i := 0; i < len(gd.Geometry.Coordinates); i += 2 {
+			ll := s2.LatLngFromDegrees(gd.Geometry.Coordinates[i+1], gd.Geometry.Coordinates[i])
+			pl[i/2] = s2.PointFromLatLng(ll)
+		}
+
+		return pl.RectBound(), nil
+
+	default:
+		return s2.Rect{}, errors.New("unsupported data type")
+	}
+
+	return s2.Rect{}, nil
+}
+
 // GeoDataToCellUnion generate an s2 cover for GeoData gd
 func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
 	var cu s2.CellUnion
