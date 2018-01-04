@@ -95,6 +95,9 @@ func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
 // GeoDataToRect generate a RectBound for GeoData gd
 // only works with Polygons & LineString
 func GeoDataToRect(gd *GeoData) (s2.Rect, error) {
+	if gd.Geometry == nil {
+		return s2.Rect{}, errors.New("invalid geometry")
+	}
 	switch gd.Geometry.Type {
 	case Geometry_POINT:
 		return s2.Rect{}, errors.New("point can't be rect bounded")
@@ -131,6 +134,9 @@ func GeoDataToRect(gd *GeoData) (s2.Rect, error) {
 
 // GeoDataToCellUnion generate an s2 cover for GeoData gd
 func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
+	if gd.Geometry == nil {
+		return nil, errors.New("invalid geometry")
+	}
 	var cu s2.CellUnion
 	switch gd.Geometry.Type {
 	case Geometry_POINT:
