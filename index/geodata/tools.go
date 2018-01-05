@@ -70,24 +70,28 @@ func GeoJSONFeatureToGeoData(f *geojson.Feature, gd *GeoData) error {
 
 // PropertiesToGeoData update gd.Properties with the properties found in f
 func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
-	if gd.Properties == nil {
-		gd.Properties = make(map[string]*structpb.Value)
-	}
+	m := make(map[string]*structpb.Value)
 	for k, vi := range f.Properties {
 		switch tv := vi.(type) {
 		case bool:
-			gd.Properties[k] = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: tv}}
+			m[k] = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: tv}}
 		case int:
-			gd.Properties[k] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(tv)}}
+			m[k] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(tv)}}
 		case string:
-			gd.Properties[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: tv}}
+			m[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: tv}}
 		case float64:
-			gd.Properties[k] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: tv}}
+			m[k] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: tv}}
 		case nil:
 			// pass
 		default:
 			return fmt.Errorf("GeoJSON property %s unsupported type %T", k, tv)
 		}
+	}
+	if len(m) > 0 {
+		gd.Properties = make(map[string]*structpb.Value)
+	}
+	for k, v := range m {
+		gd.Properties[k] = v
 	}
 	return nil
 }
