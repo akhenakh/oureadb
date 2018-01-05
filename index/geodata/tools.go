@@ -87,7 +87,7 @@ func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
 			return fmt.Errorf("GeoJSON property %s unsupported type %T", k, tv)
 		}
 	}
-	if len(m) > 0 {
+	if gd.Properties == nil && len(m) > 0 {
 		gd.Properties = make(map[string]*structpb.Value)
 	}
 	for k, v := range m {
