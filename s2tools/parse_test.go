@@ -27,4 +27,9 @@ func TestParseCellID(t *testing.T) {
 
 	c = ParseCellID("6/122")
 	require.Nil(t, c)
+
+	co = s2.CellIDFromToken("47e66f")
+	c = ParseCellID("5180950467127017000")
+	require.NotNil(t, c)
+	require.Equal(t, co, co)
 }
