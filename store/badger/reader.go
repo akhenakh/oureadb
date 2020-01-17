@@ -5,52 +5,51 @@ import (
 	"github.com/dgraph-io/badger"
 )
 
+// Reader implements bleve/Store/Reader interface
 type Reader struct {
-	// you can modify ItrOpts before calling PrefixIterator or PrefixIterator
-	// defaulted to badger.DefaultIteratorOptions by store.Reader()
-	ItrOpts badger.IteratorOptions
-	*badger.Txn
+	itrOpts badger.IteratorOptions
+	s       *Store
+	txn     *badger.Txn
 }
 
+// Get fetch the value of the specified key from the store
 func (r *Reader) Get(k []byte) ([]byte, error) {
-	item, err := r.Txn.Get(k)
-	if err == badger.ErrKeyNotFound {
+	item, err := r.txn.Get(k)
+	if err != nil {
 		return nil, nil
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	vs, err := item.Value()
-	v := make([]byte, len(vs))
-	copy(v, vs)
-
-	return v, err
+	return item.ValueCopy(nil)
 }
 
+// MultiGet returns multiple values for the specified keys
 func (r *Reader) MultiGet(keys [][]byte) ([][]byte, error) {
 	return store.MultiGet(r, keys)
 }
 
+// PrefixIterator initialize a new prefix iterator
 func (r *Reader) PrefixIterator(k []byte) store.KVIterator {
+	itr := r.txn.NewIterator(r.itrOpts)
 	rv := PrefixIterator{
-		iterator: r.Txn.NewIterator(r.ItrOpts),
-		prefix:   k[:],
+		iterator: itr,
+		prefix:   k,
 	}
 	rv.iterator.Seek(k)
 	return &rv
 }
 
+// RangeIterator initialize a new range iterator
 func (r *Reader) RangeIterator(start, end []byte) store.KVIterator {
+	itr := r.txn.NewIterator(r.itrOpts)
 	rv := RangeIterator{
-		iterator: r.Txn.NewIterator(r.ItrOpts),
-		start:    start[:],
-		stop:     end[:],
+		iterator: itr,
+		start:    start,
+		stop:     end,
 	}
 	rv.iterator.Seek(start)
 	return &rv
 }
 
+// Close closes the current reader and do some cleanup
 func (r *Reader) Close() error {
-	return nil
+	return r.txn.Commit()
 }
