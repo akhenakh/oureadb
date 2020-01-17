@@ -145,7 +145,7 @@ func geoDataCoverCellUnion(gd *GeoData, coverer *s2.RegionCoverer, interior bool
 		cu = append(cu, c.Parent(coverer.MinLevel))
 
 	case Geometry_POLYGON:
-		cup, err := coverPolygon(gd.Geometry.Coordinates, coverer)
+		cup, err := coverPolygon(gd.Geometry.Coordinates, coverer, interior)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't cover polygon")
 		}
@@ -153,7 +153,7 @@ func geoDataCoverCellUnion(gd *GeoData, coverer *s2.RegionCoverer, interior bool
 
 	case Geometry_MULTIPOLYGON:
 		for _, g := range gd.Geometry.Geometries {
-			cup, err := coverPolygon(g.Coordinates, coverer)
+			cup, err := coverPolygon(g.Coordinates, coverer, interior)
 			if err != nil {
 				return nil, errors.Wrap(err, "can't cover multipolygon")
 			}
@@ -204,7 +204,7 @@ func (gd *GeoData) InteriorCover(coverer *s2.RegionCoverer) (s2.CellUnion, error
 }
 
 // returns an s2 cover from a list of lng, lat forming a closed polygon
-func coverPolygon(c []float64, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
+func coverPolygon(c []float64, coverer *s2.RegionCoverer, interior bool) (s2.CellUnion, error) {
 	if len(c) < 6 {
 		return nil, errors.New("invalid polygons not enough coordinates for a closed polygon")
 	}
@@ -215,7 +215,9 @@ func coverPolygon(c []float64, coverer *s2.RegionCoverer) (s2.CellUnion, error) 
 	if l.IsEmpty() || l.IsFull() || l.ContainsOrigin() {
 		return nil, errors.New("invalid polygons")
 	}
-
+	if interior {
+		return coverer.InteriorCovering(l), nil
+	}
 	return coverer.Covering(l), nil
 }
 
