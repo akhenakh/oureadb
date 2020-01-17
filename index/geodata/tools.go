@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/golang/geo/s2"
-	"github.com/golang/protobuf/ptypes/struct"
 	spb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/pkg/errors"
 	"github.com/twpayne/go-geom"
@@ -70,17 +69,17 @@ func GeoJSONFeatureToGeoData(f *geojson.Feature, gd *GeoData) error {
 
 // PropertiesToGeoData update gd.Properties with the properties found in f
 func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
-	m := make(map[string]*structpb.Value)
+	m := make(map[string]*spb.Value)
 	for k, vi := range f.Properties {
 		switch tv := vi.(type) {
 		case bool:
-			m[k] = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: tv}}
+			m[k] = &spb.Value{Kind: &spb.Value_BoolValue{BoolValue: tv}}
 		case int:
-			m[k] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(tv)}}
+			m[k] = &spb.Value{Kind: &spb.Value_NumberValue{NumberValue: float64(tv)}}
 		case string:
-			m[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: tv}}
+			m[k] = &spb.Value{Kind: &spb.Value_StringValue{StringValue: tv}}
 		case float64:
-			m[k] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: tv}}
+			m[k] = &spb.Value{Kind: &spb.Value_NumberValue{NumberValue: tv}}
 		case nil:
 			// pass
 		default:
@@ -88,7 +87,7 @@ func PropertiesToGeoData(f *geojson.Feature, gd *GeoData) error {
 		}
 	}
 	if gd.Properties == nil && len(m) > 0 {
-		gd.Properties = make(map[string]*structpb.Value)
+		gd.Properties = make(map[string]*spb.Value)
 	}
 	for k, v := range m {
 		gd.Properties[k] = v
@@ -132,12 +131,10 @@ func GeoDataToRect(gd *GeoData) (s2.Rect, error) {
 	default:
 		return s2.Rect{}, errors.New("unsupported data type")
 	}
-
-	return s2.Rect{}, nil
 }
 
-// GeoDataToCellUnion generate an s2 cover for GeoData gd
-func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
+// geoDataToCoverCellUnion generate an s2 cover normalized for GeoData gd
+func geoDataCoverCellUnion(gd *GeoData, coverer *s2.RegionCoverer, interior bool) (s2.CellUnion, error) {
 	if gd.Geometry == nil {
 		return nil, errors.New("invalid geometry")
 	}
@@ -175,7 +172,12 @@ func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, e
 			pl[i/2] = s2.PointFromLatLng(ll)
 		}
 
-		cupl := coverer.Covering(&pl)
+		var cupl s2.CellUnion
+		if interior {
+			cupl = coverer.InteriorCellUnion(&pl)
+		} else {
+			cupl = coverer.CellUnion(&pl)
+		}
 		cu = append(cu, cupl...)
 
 	default:
@@ -183,6 +185,22 @@ func GeoDataToCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, e
 	}
 
 	return cu, nil
+}
+
+// Deprecated: use  Cover()
+// GeoDataToCoverCellUnion generates an s2 cover for GeoData gd
+func GeoDataToCoverCellUnion(gd *GeoData, coverer *s2.RegionCoverer) (s2.CellUnion, error) {
+	return geoDataCoverCellUnion(gd, coverer, false)
+}
+
+// Cover generates an s2 cover for GeoData gd
+func (gd *GeoData) Cover(coverer *s2.RegionCoverer) (s2.CellUnion, error) {
+	return geoDataCoverCellUnion(gd, coverer, false)
+}
+
+// InteriorCover generates an s2 interior cover for GeoData gd
+func (gd *GeoData) InteriorCover(coverer *s2.RegionCoverer) (s2.CellUnion, error) {
+	return geoDataCoverCellUnion(gd, coverer, true)
 }
 
 // returns an s2 cover from a list of lng, lat forming a closed polygon

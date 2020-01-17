@@ -93,7 +93,7 @@ func TestLineCover(t *testing.T) {
 	require.NoError(t, err)
 
 	coverer := &s2.RegionCoverer{MinLevel: 9}
-	cu, err := GeoDataToCellUnion(gd, coverer)
+	cu, err := gd.Cover(coverer)
 	require.NoError(t, err)
 
 	require.Len(t, cu, 2)

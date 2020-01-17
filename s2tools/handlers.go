@@ -94,7 +94,7 @@ func GeoJSONToCellHandler(w http.ResponseWriter, r *http.Request) {
 		MaxCells: vals[2],
 	}
 
-	cu, err := geodata.GeoDataToCellUnion(gd, coverer)
+	cu, err := gd.Cover(coverer)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
