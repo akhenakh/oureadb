@@ -18,14 +18,6 @@ func LoopFromCoordinates(c []float64) *s2.Loop {
 		points = append(points[:len(points)-1], points[len(points)-1+1:]...)
 	}
 
-	if s2.RobustSign(points[0], points[1], points[2]) != s2.CounterClockwise {
-		// reversing the slice
-		for i := len(points)/2 - 1; i >= 0; i-- {
-			opp := len(points) - 1 - i
-			points[i], points[opp] = points[opp], points[i]
-		}
-	}
-
 	loop := s2.LoopFromPoints(points)
 	return loop
 }
