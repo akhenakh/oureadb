@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
-	"github.com/twpayne/go-geom/xy"
 )
 
 // GeomToGeoData update gd with geo data gathered from g
@@ -25,16 +24,7 @@ func GeomToGeoData(g geom.T, gd *GeoData) error {
 	case *geom.Polygon:
 		// only supports outer ring
 		geo.Type = Geometry_POLYGON
-		points := g.FlatCoords()
-
-		if len(points) >= 6 && !xy.IsRingCounterClockwise(geom.XY, points) {
-			// reversing the slice
-			for i := len(points)/2 - 1; i >= 0; i-- {
-				opp := len(points) - 1 - i
-				points[i], points[opp] = points[opp], points[i]
-			}
-		}
-		geo.Coordinates = points
+		geo.Coordinates = g.FlatCoords()
 
 	case *geom.LineString:
 		geo.Type = Geometry_LINESTRING
@@ -221,10 +211,21 @@ func coverPolygon(c []float64, coverer *s2.RegionCoverer, interior bool) (s2.Cel
 	if len(c)%2 != 0 {
 		return nil, errors.New("invalid polygons odd coordinates number")
 	}
-	l := LoopFromCoordinates(c)
-	if l.IsEmpty() || l.IsFull() || l.ContainsOrigin() {
+
+	l := LoopFromCoordinatesAndCCW(c, true)
+	if l.IsEmpty() || l.IsFull() {
 		return nil, errors.New("invalid polygons")
 	}
+
+	// super hacky try reverse if ContainsOrigin
+	if l.ContainsOrigin() {
+		// reversing the slice
+		for i := len(c)/2 - 1; i >= 0; i-- {
+			opp := len(c) - 1 - i
+			c[i], c[opp] = c[opp], c[i]
+		}
+	}
+
 	if interior {
 		return coverer.InteriorCovering(l), nil
 	}
