@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
+	"github.com/twpayne/go-geom/xy"
 )
 
 // GeomToGeoData update gd with geo data gathered from g
@@ -24,7 +25,16 @@ func GeomToGeoData(g geom.T, gd *GeoData) error {
 	case *geom.Polygon:
 		// only supports outer ring
 		geo.Type = Geometry_POLYGON
-		geo.Coordinates = g.FlatCoords()
+		points := g.FlatCoords()
+
+		if len(points) >= 6 && !xy.IsRingCounterClockwise(geom.XY, points) {
+			// reversing the slice
+			for i := len(points)/2 - 1; i >= 0; i-- {
+				opp := len(points) - 1 - i
+				points[i], points[opp] = points[opp], points[i]
+			}
+		}
+		geo.Coordinates = points
 
 	case *geom.LineString:
 		geo.Type = Geometry_LINESTRING
